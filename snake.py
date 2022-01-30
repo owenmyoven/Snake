@@ -1,10 +1,7 @@
 """ TO DO
 - add levels: for example a level after every 10 points, add changes to color of background when level change
-- Have a start over thing
-- add start and death music -- maybe do a remix of snake music
-
 - yknow maybe i should add obstacles to experiment
-- idea: make 2 foods availabe, change size and/or speed when level changes, a two player mode: 
+- idea: change size and/or speed when level changes, a two player mode: 
 it would be more like a new game, not actually dying when hit yourself, animated head
 - when finished: make into exe
 
@@ -284,7 +281,12 @@ class Explosion_Particle():
                            (GAME_BOX_X +self.pos.x, GAME_BOX_Y+self.pos.y), self.radius)
 
 # Object Variables
+food = []
 F0 = Food()
+F1 = Food()
+food.append(F0)
+food.append(F1)
+
 CB0 = Checkered_Background()
 snake = []
 snake.append(Snake_Head(x=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH, y=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH))
@@ -293,20 +295,8 @@ all_particles = []
 
 # Game Loop
 while True:
-    if game_end == True:
-        if int(highscore_start) < highscore:
-            with open(os.path.join(
-                sourceFileDir,"highscore.txt"), 'w') as file: 
-                file.write(str(highscore))
-
-        
-        score = 0
-        game_end = False
-        F0 = Food()
-        CB0 = Checkered_Background()
-        snake = []
-        snake.append(Snake_Head(x=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH, y=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH))
-        all_particles = []
+    
+    
     # Event functions
     for event in pygame.event.get():
 
@@ -336,36 +326,37 @@ while True:
                 game_end = True
     
     # Snake Food Collision Detection
-    if snake[0].rect.colliderect(F0):
-        ##SOUND_CEG.play()
-        score += 1
-        if score > highscore:
-            highscore += 1
-        """
-        for i in range(50):
-            all_particles.append(Explosion_Particle(F0.x, F0.y, VX(
-                                            ), 2, ORANGE))
-        """
-        while True:
-            food_pos_is_good = True
-            pending_food_x = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
-            pending_food_y = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
-            temp_surf = pygame.Surface((BLOCK_LENGTH, BLOCK_LENGTH))
-            temp_rect = temp_surf.get_rect(
-                topleft=(GAME_BOX_X + pending_food_x, GAME_BOX_Y +pending_food_y))
-            for i in snake:
-                if i.rect.colliderect(temp_rect):
-                    food_pos_is_good = False
-                    break
+    for food_bit in food:
+        if snake[0].rect.colliderect(food_bit):
+            ##SOUND_CEG.play()
+            score += 1
+            if score > highscore:
+                highscore += 1
+            """
+            for i in range(50):
+                all_particles.append(Explosion_Particle(F0.x, F0.y, VX(
+                                                ), 2, ORANGE))
+            """
+            while True:
+                food_pos_is_good = True
+                pending_food_x = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
+                pending_food_y = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
+                temp_surf = pygame.Surface((BLOCK_LENGTH, BLOCK_LENGTH))
+                temp_rect = temp_surf.get_rect(
+                    topleft=(GAME_BOX_X + pending_food_x, GAME_BOX_Y +pending_food_y))
+                for i in snake:
+                    if i.rect.colliderect(temp_rect):
+                        food_pos_is_good = False
+                        break
 
-            if food_pos_is_good:
-                F0.x = pending_food_x
-                F0.y = pending_food_y
-                for i in range(BLOCKS_ADDED_PER_FOOD):
-                    snake.append(Snake_Body_Blocks(snake[-1]))
-                snake[-1].color = WHITE
-                
-                break
+                if food_pos_is_good:
+                    food_bit.x = pending_food_x
+                    food_bit.y = pending_food_y
+                    for i in range(BLOCKS_ADDED_PER_FOOD):
+                        snake.append(Snake_Body_Blocks(snake[-1]))
+                    snake[-1].color = WHITE
+                    
+                    break
         
 
     # Snake Head Display
@@ -387,16 +378,57 @@ while True:
     DISPLAY_SURF.blit(text_1, text_rect_1)
 
     # Food Display
-    DISPLAY_SURF.blit(F0.surf, F0.rect)
-    F0.update()
+    for i in food:
+        DISPLAY_SURF.blit(i.surf,i.rect)
+        i.update()
 
     # Particles
     for entity in all_particles:
         entity.update()
+    
+    # Game End
+    if game_end == True:
+        pressed_keys = pygame.key.get_pressed()
+        temp_surf_2 = pygame.Surface((400,60))
+        temp_surf_2.fill(DARK_GRAY)
+        temp_rect_2 = temp_surf_2.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2+3))
+        DISPLAY_SURF.blit(temp_surf_2, temp_rect_2)
+        text_0 = font.render("Press Space to Retry", True, ORANGE)
+        text_rect_0 = text_0.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+        DISPLAY_SURF.blit(text_0, text_rect_0)
+        
+        for i in snake:
+            i.x -= i.vx *2
+            i.y -= i.vy * 2
+            i.vx = 0
+            i.vy = 0
+            i.speed = 0
+
+        
+        if pressed_keys[K_SPACE]:
+
+            if int(highscore_start) < highscore:
+                with open(os.path.join(
+                    sourceFileDir,"highscore.txt"), 'w') as file: 
+                    file.write(str(highscore))
+
+            score = 0
+        
+            food = []
+            F0 = Food()
+            F1 = Food()
+            food.append(F0)
+            food.append(F1)
+            CB0 = Checkered_Background()
+            snake = []
+            game_end = False
+            snake.append(Snake_Head(x=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH, y=round((GAME_BOX_WIDTH/BLOCK_LENGTH)/2)*BLOCK_LENGTH))
+            all_particles = []
 
     # Update Stuff
     pygame.display.update()
     clock.tick(FPS)
+
 
 
 
