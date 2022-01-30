@@ -1,4 +1,6 @@
 """ TO DO
+- Improve performance
+- add fps debug counter
 - add levels: for example a level after every 10 points, add changes to color of background when level change
 - yknow maybe i should add obstacles to experiment
 - idea: change size and/or speed when level changes, a two player mode: 
@@ -124,23 +126,23 @@ class Snake_Head():
                 if self.vy != -self.speed and self.vy != self.speed:
                     self.loading = True
                     self.pending_direction = "up"
-                    SOUND_C.play()
+                    ## SOUND_C.play()
             if pressed_keys[K_LEFT]:
                 if self.vx != -self.speed and self.vx != self.speed:
                     self.loading = True
                     self.pending_direction = "left"
-                    SOUND_E.play()
+                    ## SOUND_E.play()
             if pressed_keys[K_RIGHT]:
                 if self.vx != -self.speed and self.vx != self.speed:
                     self.loading = True
                     self.pending_direction = "right"
-                    SOUND_G.play()
+                    ## SOUND_G.play()
 
             if pressed_keys[K_DOWN]:
                 if self.vy != -self.speed and self.vy != self.speed:
                     self.loading = True
                     self.pending_direction = "down"
-                    SOUND_B.play()
+                    ## SOUND_B.play()
 
         if aligned((self.x, self.y)):
             self.previous_aligned_point = (self.x, self.y)
@@ -428,6 +430,7 @@ while True:
     # Update Stuff
     pygame.display.update()
     clock.tick(FPS)
+    print(clock.get_fps())
 
 
 
