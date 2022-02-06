@@ -1,6 +1,4 @@
 """ TO DO
-- fix highscore, maybe store high score locally
-- add fps debug counter
 - add levels: for example a level after every 10 points, add changes to color of background when level change
 - yknow maybe i should add obstacles to experiment
 - idea: change size and/or speed when level changes, a two player mode: 
@@ -12,10 +10,10 @@ it would be more like a new game, not actually dying when hit yourself, animated
 import pygame
 from pygame.locals import *
 from random import randint, uniform, choice
-from math import sqrt
+from math import sqrt, floor
 import sys, os
 from pygame.transform import scale
-
+import pickle
 
 
 # Pygame Setup
@@ -32,7 +30,8 @@ ORANGE = (255, 150, 0)
 DARK_GRAY = (20, 20, 20)
 GRAY = (40, 40, 40)
 LIGHT_GRAY = (255,255,255)
-
+BLUE = (0,150,255)
+GREEN = (80,80,80)
 # Screen
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 620, 688
@@ -44,16 +43,18 @@ background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(BACKGROUND_COLOR)
 
 # Variables
+
 score = 0
-highscore = int(open(os.path.join(
-    sourceFileDir,"highscore.txt"),'r') .read())
+inputFile = 'test.data'
+fd = open(inputFile, 'rb')
+highscore = pickle.load(fd)
 highscore_start = highscore
 font = pygame.font.SysFont("bahnschrift", 35)
 game_end = False
 
 # Constants
-SPEED = 1.5
-BLOCK_LENGTH = 30
+SPEED = 2
+BLOCK_LENGTH = 60
 SNAKE_LENGTH = BLOCK_LENGTH -2
 SNAKE_COLOR = WHITE
 FOOD_COLOR = ORANGE
@@ -64,7 +65,7 @@ GAME_BOX_X, GAME_BOX_Y= 10, 77
 # Images
 
 IMAGE_BANNER = pygame.image.load(os.path.join(
-    sourceFileDir, os.path.join('assets', 'banner.png'))).convert()
+    sourceFileDir, os.path.join('assets', 'banner1.png')))
 
 # Sound
 try:
@@ -261,11 +262,14 @@ class Checkered_Background():
         self.length = BLOCK_LENGTH
         self.surf_0 = pygame.Surface((self.length, self.length))
         self.rect_0 = self.surf_0.get_rect(topleft=(0,0))
+        self.color = GRAY
 
     def update(self, x, y):
+        global score
+        
 
         self.rect_0.update(GAME_BOX_X + x, GAME_BOX_Y+ y, self.length, self.length)
-        self.surf_0.fill(DARK_GRAY)
+        self.surf_0.fill(self.color)
 
 class Explosion_Particle():
     def __init__(self, x, y, v, radius, color):
@@ -287,9 +291,9 @@ class Explosion_Particle():
 # Object Variables
 food = []
 F0 = Food()
-F1 = Food()
+##F1 = Food()
 food.append(F0)
-food.append(F1)
+##food.append(F1)
 
 CB0 = Checkered_Background()
 snake = []
@@ -309,6 +313,8 @@ while(1):
             sys.exit()
 
     # Background Display
+
+    DISPLAY_SURF.blit(background,(0,0))
     DISPLAY_SURF.blit(IMAGE_BANNER, (0, 0))
     
     x_offset = 1
@@ -334,14 +340,16 @@ while(1):
         if snake[0].rect.colliderect(food_bit):
             ##SOUND_CEG.play()
             score += 1
-            if score > highscore:
-                highscore += 1
+            
             """
             for i in range(50):
                 all_particles.append(Explosion_Particle(F0.x, F0.y, VX(
                                                 ), 2, ORANGE))
             """
             while True:
+                if score >= floor(((GAME_BOX_WIDTH/BLOCK_LENGTH)**2)/2):
+                    game_end = True
+                    break
                 food_pos_is_good = True
                 pending_food_x = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
                 pending_food_y = randint(0, GAME_BOX_WIDTH/BLOCK_LENGTH-1) * BLOCK_LENGTH
@@ -393,13 +401,24 @@ while(1):
     # Game End
     if game_end == True:
         pressed_keys = pygame.key.get_pressed()
-        temp_surf_2 = pygame.Surface((400,60))
-        temp_surf_2.fill(DARK_GRAY)
-        temp_rect_2 = temp_surf_2.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2+3))
-        DISPLAY_SURF.blit(temp_surf_2, temp_rect_2)
-        text_0 = font.render("Press Space to Retry", True, ORANGE)
-        text_rect_0 = text_0.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-        DISPLAY_SURF.blit(text_0, text_rect_0)
+        if score > highscore:
+                highscore = score
+        if score >= floor(((GAME_BOX_WIDTH/BLOCK_LENGTH)**2)/2):
+            temp_surf_2 = pygame.Surface((400,60))
+            temp_surf_2.fill(DARK_GRAY)
+            temp_rect_2 = temp_surf_2.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2+3))
+            DISPLAY_SURF.blit(temp_surf_2, temp_rect_2)
+            text_0 = font.render("YOU WIN!!!", True, ORANGE)
+            text_rect_0 = text_0.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+            DISPLAY_SURF.blit(text_0, text_rect_0)
+        else:
+            temp_surf_2 = pygame.Surface((400,60))
+            temp_surf_2.fill(DARK_GRAY)
+            temp_rect_2 = temp_surf_2.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2+3))
+            DISPLAY_SURF.blit(temp_surf_2, temp_rect_2)
+            text_0 = font.render("Press Space to Retry", True, ORANGE)
+            text_rect_0 = text_0.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+            DISPLAY_SURF.blit(text_0, text_rect_0)
         
         for i in snake:
             i.x -= i.vx *2
@@ -409,9 +428,10 @@ while(1):
             i.speed = 0
 
         if int(highscore_start) < highscore:
-                with open(os.path.join(
-                    sourceFileDir,"highscore.txt"), 'w') as file: 
-                    file.write(str(highscore))
+                outputFile = 'test.data'
+                fw = open(outputFile, 'wb')
+                pickle.dump(highscore, fw)
+                fw.close()
 
         if pressed_keys[K_SPACE]:
 
@@ -421,9 +441,9 @@ while(1):
         
             food = []
             F0 = Food()
-            F1 = Food()
+            ##F1 = Food()
             food.append(F0)
-            food.append(F1)
+            ##food.append(F1)
             CB0 = Checkered_Background()
             snake = []
             game_end = False
