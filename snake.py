@@ -1,4 +1,6 @@
 """ TO DO
+- fix highscore, maybe store high score locally
+- make only one food available at a time
 - Improve performance
 - add fps debug counter
 - add levels: for example a level after every 10 points, add changes to color of background when level change
@@ -20,10 +22,11 @@ from pygame.transform import scale
 
 # Pygame Setup
 pygame.init()
-FPS = 100
+FPS = 60
 clock = pygame.time.Clock()
 vec = pygame.math.Vector2
 sourceFileDir = os.path.dirname(os.path.abspath(__file__))
+pygame.event.set_allowed([QUIT, KEYDOWN, KEYUP])
 
 # Colors
 WHITE = (255, 255, 255)
@@ -33,6 +36,7 @@ GRAY = (40, 40, 40)
 LIGHT_GRAY = (255,255,255)
 
 # Screen
+
 SCREEN_WIDTH, SCREEN_HEIGHT = 620, 688
 DISPLAY_SURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 DISPLAY_SURF.fill(WHITE)
@@ -62,7 +66,7 @@ GAME_BOX_X, GAME_BOX_Y= 10, 77
 # Images
 
 IMAGE_BANNER = pygame.image.load(os.path.join(
-    sourceFileDir, os.path.join('assets', 'banner.png')))
+    sourceFileDir, os.path.join('assets', 'banner.png'))).convert()
 
 # Sound
 try:
@@ -296,7 +300,7 @@ all_particles = []
 
 
 # Game Loop
-while True:
+while(1):
     
     
     # Event functions
@@ -406,13 +410,14 @@ while True:
             i.vy = 0
             i.speed = 0
 
-        
-        if pressed_keys[K_SPACE]:
-
-            if int(highscore_start) < highscore:
+        if int(highscore_start) < highscore:
                 with open(os.path.join(
                     sourceFileDir,"highscore.txt"), 'w') as file: 
                     file.write(str(highscore))
+
+        if pressed_keys[K_SPACE]:
+
+            
 
             score = 0
         
@@ -430,7 +435,7 @@ while True:
     # Update Stuff
     pygame.display.update()
     clock.tick(FPS)
-    print(clock.get_fps())
+    ##print(clock.get_fps())
 
 
 
