@@ -1,7 +1,5 @@
 """ TO DO
 - fix highscore, maybe store high score locally
-- make only one food available at a time
-- Improve performance
 - add fps debug counter
 - add levels: for example a level after every 10 points, add changes to color of background when level change
 - yknow maybe i should add obstacles to experiment
@@ -22,7 +20,7 @@ from pygame.transform import scale
 
 # Pygame Setup
 pygame.init()
-FPS = 60
+FPS = 100
 clock = pygame.time.Clock()
 vec = pygame.math.Vector2
 sourceFileDir = os.path.dirname(os.path.abspath(__file__))
@@ -54,7 +52,7 @@ font = pygame.font.SysFont("bahnschrift", 35)
 game_end = False
 
 # Constants
-SPEED = 3
+SPEED = 1.5
 BLOCK_LENGTH = 30
 SNAKE_LENGTH = BLOCK_LENGTH -2
 SNAKE_COLOR = WHITE
